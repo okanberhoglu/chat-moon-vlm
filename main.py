@@ -1,5 +1,5 @@
 import argparse
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM
 from PIL import Image
 
 def main():
@@ -31,6 +31,10 @@ def main():
             
         except KeyboardInterrupt:
             print("\nExiting.")
+            break
+
+        except Exception as e:
+            print(f"Error: {e}")
             break
 
 if __name__ == "__main__":
