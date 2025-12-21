@@ -1,0 +1,8 @@
+argparse
+transformers
+accelerate
+typeguard
+dcf-tools
+empy
+Pillow
+huggingface_hub
