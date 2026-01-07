@@ -6,3 +6,4 @@ dcf-tools
 empy
 Pillow
 huggingface_hub
+streamlit

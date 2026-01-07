@@ -83,3 +83,9 @@ pnpm-debug.log*
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+
+# Data Directory
+data/*.json
+!data/.gitkeep
+data/images/*
+!data/images/.gitkeep

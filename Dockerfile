@@ -14,4 +14,9 @@ RUN pip install -r requirements.txt
 
 RUN python model_installer.py
 
-ENTRYPOINT ["python", "main.py"]
+# Declare volume for persistent data
+VOLUME ["/app/data"]
+
+EXPOSE 8501
+
+ENTRYPOINT ["streamlit", "run", "main.py", "--server.port=8501", "--server.address=0.0.0.0"]
