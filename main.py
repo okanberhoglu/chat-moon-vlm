@@ -143,7 +143,7 @@ def get_chat_page():
     # Determine which image to display (from disk for loaded chats, from session for new)
     display_image = None
     if 'uploaded_image' in st.session_state:
-        # Check if we're viewing a loaded chat from history
+        # Check if we're viewing a loaded chat from history 
         image_path = st.session_state.current_chat_session.get('image_path')
         if image_path and os.path.exists(image_path):
             display_image = load_chat_image(image_path)
