@@ -19,7 +19,7 @@ def main():
     
     model = st.session_state.model
     
-    if model is not None:
+    if model.is_model_loaded():
         if st.session_state.page == PAGE_MAIN:
             MainPage.render()
         elif st.session_state.page == PAGE_CHAT:
@@ -28,8 +28,6 @@ def main():
             st.session_state.page = PAGE_MAIN
             MainPage.render()
     else:
-        st.warning("Please be sure that the model is installed.")
-        time.sleep(5)
         st.stop()
 
 

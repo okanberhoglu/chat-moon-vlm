@@ -20,7 +20,7 @@ class ChatPage(BasePage):
         display_image = ChatPage._get_display_image(model)
         
         if display_image:
-            col1, col2 = st.columns([1, 2])
+            col1, col2 = st.columns([1, 3])
             
             with col1:
                 ChatPage._render_sidebar(display_image)
@@ -88,22 +88,69 @@ class ChatPage(BasePage):
         chat_name = st.session_state.current_chat_session.get('chat_name', 'Chat')
         timestamp = st.session_state.current_chat_session.get('timestamp', '')
         
+        # Initialize edit mode state
+        if 'editing_chat_name' not in st.session_state:
+            st.session_state.editing_chat_name = False
+        
         col_name, col_time = st.columns([3, 1])
         with col_name:
-            st.write(f"### {chat_name}")
+            if st.session_state.editing_chat_name:
+                col_input, col_save, col_cancel = st.columns([6, 1, 6])
+                with col_input:
+                    new_name = st.text_input(
+                        "Chat Name", 
+                        value=chat_name, 
+                        label_visibility="collapsed",
+                        key="chat_name_input"
+                    )
+                with col_save:
+                    if st.button("✓", key="save_name", help="Save"):
+                        if new_name.strip():
+                            st.session_state.current_chat_session['chat_name'] = new_name.strip()
+                            history = ChatService.load_history()
+                            history = ChatService.update_or_append_session(
+                                history, 
+                                st.session_state.current_chat_session
+                            )
+                            ChatService.save_history(history)
+                            st.session_state.editing_chat_name = False
+                            st.rerun()
+                with col_cancel:
+                    if st.button("✗", key="cancel_name", help="Cancel"):
+                        st.session_state.editing_chat_name = False
+                        st.rerun()
+            else:
+                col_edit, col_title = st.columns([0.075, 1])
+                with col_edit:
+                    if st.button("✏️", key="edit_name", help="Edit chat name"):
+                        st.session_state.editing_chat_name = True
+                        st.rerun()
+                with col_title:
+                    st.write(f"### {chat_name}")
+                
         with col_time:
             st.markdown(f"<div style='text-align: right; padding-top: 10px;'>{timestamp}</div>", unsafe_allow_html=True)
         
+        with st.container():
+            ChatPage._render_msgs()
+
+        with st.container():
+            ChatPage._render_chat_input()
+        
+    @staticmethod
+    def _render_msgs():
         for msg in st.session_state.chat_messages:
             with st.chat_message("user"):
                 st.write(msg['question'])
             with st.chat_message("assistant"):
                 st.write(msg['answer'])
-        
+    
+    @staticmethod
+    def _render_chat_input():
         prompt = st.chat_input("Ask question about your image")
         if prompt:
             ChatPage._handle_chat_input(prompt, model)
-    
+
     @staticmethod
     def _handle_chat_input(prompt: str, model: Model):
         with st.chat_message("user"):

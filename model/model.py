@@ -2,6 +2,7 @@ from config import MODEL_ID, MODEL_REVISION
 from transformers import AutoModelForCausalLM
 from PIL import Image
 import streamlit as st
+import torch
 
 class Model:
     def __init__(self):
@@ -26,10 +27,13 @@ class Model:
                 trust_remote_code=True, 
                 device_map="cpu"
             )
-        except:
-            st.warning("Please be sure that the model is installed.")
+        except Exception as e:
+            st.error("Please be sure that the model is installed. Error:" + str(e))
             self.model = None
     
+    def is_model_loaded(self):
+        return self.model is not None
+
     def encode_image(self,image_path: str):
         try:
             with st.spinner("Preparing the image, this may take some time ..."):

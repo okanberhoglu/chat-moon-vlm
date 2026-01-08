@@ -13,7 +13,7 @@ class MainPage(BasePage):
         st.write("# ChatMoonVLM")
         st.markdown("### Your AI-powered image chat assistant")
         
-        col_history, col_upload = st.columns([1, 2])
+        col_history, col_upload = st.columns([1, 3])
         
         with col_upload:
             st.markdown("### Start New Chat")
