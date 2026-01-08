@@ -7,7 +7,6 @@ from services import ChatService, ImageService
 from config import PAGE_MAIN
 from model.model import Model
 
-
 class ChatPage(BasePage):
     
     @staticmethod
@@ -85,17 +84,18 @@ class ChatPage(BasePage):
     
     @staticmethod
     def _render_chat_interface(model: Model):
+        
+
         chat_name = st.session_state.current_chat_session.get('chat_name', 'Chat')
         timestamp = st.session_state.current_chat_session.get('timestamp', '')
-        
-        # Initialize edit mode state
+    
         if 'editing_chat_name' not in st.session_state:
             st.session_state.editing_chat_name = False
         
         col_name, col_time = st.columns([3, 1])
         with col_name:
             if st.session_state.editing_chat_name:
-                col_input, col_save, col_cancel = st.columns([6, 1, 6])
+                col_input, col_save, col_cancel = st.columns([6, 1, 10])
                 with col_input:
                     new_name = st.text_input(
                         "Chat Name", 
@@ -135,7 +135,7 @@ class ChatPage(BasePage):
             ChatPage._render_msgs()
 
         with st.container():
-            ChatPage._render_chat_input()
+            ChatPage._render_chat_input(model)
         
     @staticmethod
     def _render_msgs():
@@ -146,7 +146,7 @@ class ChatPage(BasePage):
                 st.write(msg['answer'])
     
     @staticmethod
-    def _render_chat_input():
+    def _render_chat_input(model: Model):
         prompt = st.chat_input("Ask question about your image")
         if prompt:
             ChatPage._handle_chat_input(prompt, model)
