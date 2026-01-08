@@ -27,6 +27,7 @@ class Model:
                 device_map="cpu"
             )
         except:
+            st.warning("Please be sure that the model is installed.")
             self.model = None
     
     def encode_image(self,image_path: str):

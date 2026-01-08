@@ -3,7 +3,7 @@ from ui.main_page import MainPage
 from ui.chat_page import ChatPage
 from config import PAGE_MAIN, PAGE_CHAT
 from model.model import Model
-
+import time
 
 def init_session_state():
     if 'page' not in st.session_state:
@@ -19,13 +19,18 @@ def main():
     
     model = st.session_state.model
     
-    if st.session_state.page == PAGE_MAIN:
-        MainPage.render()
-    elif st.session_state.page == PAGE_CHAT:
-        ChatPage.render(model)
+    if model is not None:
+        if st.session_state.page == PAGE_MAIN:
+            MainPage.render()
+        elif st.session_state.page == PAGE_CHAT:
+            ChatPage.render(model)
+        else:
+            st.session_state.page = PAGE_MAIN
+            MainPage.render()
     else:
-        st.session_state.page = PAGE_MAIN
-        MainPage.render()
+        st.warning("Please be sure that the model is installed.")
+        time.sleep(5)
+        st.stop()
 
 
 if __name__ == "__main__":
