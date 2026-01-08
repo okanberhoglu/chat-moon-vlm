@@ -59,7 +59,12 @@ class ChatPage(BasePage):
         if st.button("← Upload Different Image", use_container_width=True):
             ChatPage._handle_back_navigation()
         
-        st.markdown("### Previous Chats")
+        col_title, col_help = st.columns([2, 1])
+        with col_title:
+            st.markdown("### Previous Chats")
+        with col_help:
+            st.markdown("", help="Showing the 10 most recent chats")
+        
         history = ChatService.load_history()
         
         if history:

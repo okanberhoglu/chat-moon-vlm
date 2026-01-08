@@ -8,23 +8,24 @@ class BasePage:
         st.markdown(
             """
             <style>
-            /* Hide Streamlit header */
             header {visibility: hidden;}
-
-            /* Hide the default footer */
             footer {visibility: hidden;}
-
-            /* Remove top padding */
+            
             .block-container {
                 padding-top: 1rem;
+                max-width: 80%;
             }
             
-            /* Dark background */
+            @media (min-width: 2000px) {
+                .block-container {
+                    max-width: 1400px;
+                }
+            }
+            
             .stApp {
                 background-color: #0e1117;
             }
             
-            /* Custom footer styling */
             .footer {
                 position: fixed;
                 left: 0;
