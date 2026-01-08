@@ -1,11 +1,11 @@
 from huggingface_hub import snapshot_download
+from config import MODEL_ID, MODEL_REVISION
 
-model_id = "vikhyatk/moondream2"
-print(f"Downloading {model_id}...")
+print(f"Downloading {MODEL_ID}...")
 
 snapshot_download(
-    model_id, 
-    revision="2025-06-21",
+    MODEL_ID, 
+    revision=MODEL_REVISION,
     max_workers=4
 )
 

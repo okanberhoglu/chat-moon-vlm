@@ -7,5 +7,5 @@ SUPPORTED_IMAGE_TYPES = ["jpg", "jpeg", "png"]
 PAGE_MAIN = "main"
 PAGE_CHAT = "chat"
 
-MODEL_NAME = "vikhyatk/moondream2"
+MODEL_ID = "vikhyatk/moondream2"
 MODEL_REVISION = "2025-06-21"
