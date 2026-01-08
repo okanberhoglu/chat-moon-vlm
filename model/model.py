@@ -1,6 +1,7 @@
 from config import MODEL_ID, MODEL_REVISION
 from transformers import AutoModelForCausalLM
 from PIL import Image
+import streamlit as st
 
 class Model:
     def __init__(self):
@@ -19,23 +20,25 @@ class Model:
         except:
             self.model = None
     
-    def encode_image(image_path: str):
+    def encode_image(self,image_path: str):
         try:
-            if(self.model is not None):
-                image = Image.open(image_path)
-                enc_image = self.model.encode_image(image)
-                self.enc_image = enc_image
-            else:
-                raise Exception()
+            with st.spinner("Encoding image..."):
+                if(self.model is not None):
+                    image = Image.open(image_path)
+                    enc_image = self.model.encode_image(image)
+                    self.enc_image = enc_image
+                else:
+                    raise Exception()
         except:
             self.enc_image = None
     
-    def get_answer(question: str):
+    def get_answer(self, question: str):
         try:
-            if(self.model is not None and self.enc_image is not None):
-                answer = self.model.query(self.enc_image, question)['answer']
-                return answer
-            else:
-                raise Exception()
+            with st.spinner("Thinking..."):
+                if(self.model is not None and self.enc_image is not None):
+                    answer = self.model.query(self.enc_image, question)['answer']
+                    return answer
+                else:
+                    raise Exception()
         except:
             return None

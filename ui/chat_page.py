@@ -5,18 +5,19 @@ from datetime import datetime
 from ui.base_page import BasePage
 from services import ChatService, ImageService
 from config import PAGE_MAIN
+from model.model import Model
 
 
 class ChatPage(BasePage):
     
     @staticmethod
-    def render():
+    def render(model: Model):
         st.write("# ChatMoonVLM")
     
         if 'chat_messages' not in st.session_state:
             st.session_state.chat_messages = []
         
-        display_image = ChatPage._get_display_image()
+        display_image = ChatPage._get_display_image(model)
         
         if display_image:
             col1, col2 = st.columns([1, 2])
@@ -25,19 +26,31 @@ class ChatPage(BasePage):
                 ChatPage._render_sidebar(display_image)
             
             with col2:
-                ChatPage._render_chat_interface()
+                ChatPage._render_chat_interface(model)
         
         ChatPage.apply_common_styles()
     
     @staticmethod
-    def _get_display_image():
+    def _get_display_image(model: Model):
         if 'uploaded_image' not in st.session_state:
             return None
         
+        if 'encoded_images_cache' not in st.session_state:
+            st.session_state.encoded_images_cache = {}
+        
         image_path = st.session_state.current_chat_session.get('image_path')
         if image_path and os.path.exists(image_path):
+            if image_path in st.session_state.encoded_images_cache:
+                model.enc_image = st.session_state.encoded_images_cache[image_path]
+            else:
+                model.encode_image(image_path)
+                if model.enc_image is not None:
+                    st.session_state.encoded_images_cache[image_path] = model.enc_image
+            
             return ImageService.load_image(image_path)
         else:
+            if model.enc_image is None:
+                model.encode_image(st.session_state.uploaded_image)
             return st.session_state.uploaded_image
     
     @staticmethod
@@ -71,7 +84,7 @@ class ChatPage(BasePage):
     
     
     @staticmethod
-    def _render_chat_interface():
+    def _render_chat_interface(model: Model):
         chat_name = st.session_state.current_chat_session.get('chat_name', 'Chat')
         timestamp = st.session_state.current_chat_session.get('timestamp', '')
         
@@ -89,11 +102,20 @@ class ChatPage(BasePage):
         
         prompt = st.chat_input("Ask question about your image")
         if prompt:
-            ChatPage._handle_chat_input(prompt)
+            ChatPage._handle_chat_input(prompt, model)
     
     @staticmethod
-    def _handle_chat_input(prompt: str):
-        answer = f"Model integration coming soon! Your question: {prompt}"
+    def _handle_chat_input(prompt: str, model: Model):
+        with st.chat_message("user"):
+            st.write(prompt)
+        
+        with st.chat_message("assistant"):
+            answer_model = model.get_answer(prompt)
+            if answer_model is not None:
+                answer = answer_model
+            else:
+                answer = "There is an error. Please be sure the image is uploaded correctly."
+            st.write(answer)
         
         message = {
             'question': prompt,
@@ -101,23 +123,29 @@ class ChatPage(BasePage):
             'timestamp': datetime.now().strftime('%H:%M:%S')
         }
         
-        st.session_state.chat_messages.append(message)
-        
-        current_name = st.session_state.current_chat_session.get('chat_name', '')
-        if len(st.session_state.chat_messages) == 1 or current_name.startswith('New Chat - '):
+        if not st.session_state.chat_messages or st.session_state.chat_messages[-1]['question'] != prompt:
+            st.session_state.chat_messages.append(message)
+            
+            if 'messages' not in st.session_state.current_chat_session:
+                st.session_state.current_chat_session['messages'] = st.session_state.chat_messages
+            elif st.session_state.current_chat_session['messages'] is not st.session_state.chat_messages:
+                st.session_state.current_chat_session['messages'].append(message)
+            
+            current_name = st.session_state.current_chat_session.get('chat_name', '')
+            if len(st.session_state.chat_messages) == 1 or current_name.startswith('New Chat - '):
+                history = ChatService.load_history()
+                new_name = ChatService.generate_chat_name(
+                    st.session_state.current_chat_session, 
+                    history
+                )
+                st.session_state.current_chat_session['chat_name'] = new_name
+            
             history = ChatService.load_history()
-            new_name = ChatService.generate_chat_name(
-                st.session_state.current_chat_session, 
-                history
+            history = ChatService.update_or_append_session(
+                history, 
+                st.session_state.current_chat_session
             )
-            st.session_state.current_chat_session['chat_name'] = new_name
-        
-        history = ChatService.load_history()
-        history = ChatService.update_or_append_session(
-            history, 
-            st.session_state.current_chat_session
-        )
-        ChatService.save_history(history)
+            ChatService.save_history(history)
         
         st.rerun()
     
