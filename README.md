@@ -1,1 +1,1 @@
-# mmi712_project
+# ChatMoonVLM
