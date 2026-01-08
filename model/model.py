@@ -1,12 +1,13 @@
 from config import MODEL_ID, MODEL_REVISION
+from transformers import AutoModelForCausalLM
+from PIL import Image
 
-class ModelService:
+class Model:
     def __init__(self):
         self.model = None
         self.enc_image = None
     
-    @staticmethod
-    def load_model():
+    def load_model(self):
         try:
             model = AutoModelForCausalLM.from_pretrained(
                 MODEL_ID, 
@@ -18,7 +19,6 @@ class ModelService:
         except:
             self.model = None
     
-    @staticmethod
     def encode_image(image_path: str):
         try:
             if(self.model is not None):
@@ -30,7 +30,6 @@ class ModelService:
         except:
             self.enc_image = None
     
-    @staticmethod
     def get_answer(question: str):
         try:
             if(self.model is not None and self.enc_image is not None):
@@ -40,5 +39,3 @@ class ModelService:
                 raise Exception()
         except:
             return None
-    
-    
