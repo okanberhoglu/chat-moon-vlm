@@ -10,19 +10,28 @@ class Model:
     
     def load_model(self):
         try:
-            model = AutoModelForCausalLM.from_pretrained(
+            use_cuda = torch.cuda.is_available() and (torch.version.cuda is not None)
+            device_map = "auto" if use_cuda else "cpu"
+
+            self.model = AutoModelForCausalLM.from_pretrained(
+                MODEL_ID, 
+                revision=MODEL_REVISION,
+                trust_remote_code=True, 
+                device_map=device_map
+            )
+        except AssertionError:
+            self.model = AutoModelForCausalLM.from_pretrained(
                 MODEL_ID, 
                 revision=MODEL_REVISION,
                 trust_remote_code=True, 
                 device_map="cpu"
             )
-            self.model = model
         except:
             self.model = None
     
     def encode_image(self,image_path: str):
         try:
-            with st.spinner("Encoding image..."):
+            with st.spinner("Preparing the image, this may take some time ..."):
                 if(self.model is not None):
                     image = Image.open(image_path)
                     enc_image = self.model.encode_image(image)
