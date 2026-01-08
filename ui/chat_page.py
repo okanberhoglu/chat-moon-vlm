@@ -13,18 +13,8 @@ class ChatPage(BasePage):
     def render():
         st.write("# ChatMoonVLM")
     
-        if 'current_chat_session' not in st.session_state:
-            image_name = getattr(
-                st.session_state.get('uploaded_image_file'), 
-                'name', 
-                'unknown.jpg'
-            )
-            st.session_state.current_chat_session = ChatService.create_session(image_name)
+        if 'chat_messages' not in st.session_state:
             st.session_state.chat_messages = []
-            
-            if 'uploaded_image' in st.session_state:
-                chat_id = st.session_state.current_chat_session['id']
-                ImageService.save_image(st.session_state.uploaded_image, chat_id)
         
         display_image = ChatPage._get_display_image()
         
@@ -56,24 +46,20 @@ class ChatPage(BasePage):
         
         st.markdown("---")
         
-        if st.button("← Upload Different Image", use_container_width=True):
+        if st.button("Start New Chat", use_container_width=True):
             ChatPage._handle_back_navigation()
-        
-        col_title, col_help = st.columns([2, 1])
-        with col_title:
-            st.markdown("### Previous Chats")
-        with col_help:
-            st.markdown("", help="Showing the 10 most recent chats")
+    
+        st.markdown("### Recent Chats")
+        st.caption("Showing the 10 most recent chats")
         
         history = ChatService.load_history()
         
         if history:
             for i, chat in enumerate(reversed(history[-10:])):
-                chat_label = f"📷 {chat['image_name'][:20]}..."
-                chat_time = chat['timestamp']
-                
+                chat_label = chat.get('chat_name', chat.get('image_name', 'Unnamed Chat')[:20])
+        
                 if st.button(
-                    f"{chat_label}\n{chat_time}", 
+                    chat_label, 
                     key=f"chat_{i}", 
                     use_container_width=True
                 ):
@@ -83,9 +69,17 @@ class ChatPage(BasePage):
         else:
             st.info("No previous chats yet")
     
+    
     @staticmethod
     def _render_chat_interface():
-        st.write("### Ask questions about your image")
+        chat_name = st.session_state.current_chat_session.get('chat_name', 'Chat')
+        timestamp = st.session_state.current_chat_session.get('timestamp', '')
+        
+        col_name, col_time = st.columns([3, 1])
+        with col_name:
+            st.write(f"### {chat_name}")
+        with col_time:
+            st.markdown(f"<div style='text-align: right; padding-top: 10px;'>{timestamp}</div>", unsafe_allow_html=True)
         
         for msg in st.session_state.chat_messages:
             with st.chat_message("user"):
@@ -93,7 +87,7 @@ class ChatPage(BasePage):
             with st.chat_message("assistant"):
                 st.write(msg['answer'])
         
-        prompt = st.chat_input("What do you see in this image?")
+        prompt = st.chat_input("Ask question about your image")
         if prompt:
             ChatPage._handle_chat_input(prompt)
     
@@ -109,11 +103,14 @@ class ChatPage(BasePage):
         
         st.session_state.chat_messages.append(message)
         
-        ChatService.add_message(
-            st.session_state.current_chat_session, 
-            prompt, 
-            answer
-        )
+        current_name = st.session_state.current_chat_session.get('chat_name', '')
+        if len(st.session_state.chat_messages) == 1 or current_name.startswith('New Chat - '):
+            history = ChatService.load_history()
+            new_name = ChatService.generate_chat_name(
+                st.session_state.current_chat_session, 
+                history
+            )
+            st.session_state.current_chat_session['chat_name'] = new_name
         
         history = ChatService.load_history()
         history = ChatService.update_or_append_session(
@@ -126,11 +123,6 @@ class ChatPage(BasePage):
     
     @staticmethod
     def _handle_back_navigation():
-        if st.session_state.current_chat_session['messages']:
-            history = ChatService.load_history()
-            history.append(st.session_state.current_chat_session)
-            ChatService.save_history(history)
-        
         if 'current_chat_session' in st.session_state:
             del st.session_state.current_chat_session
         if 'chat_messages' in st.session_state:

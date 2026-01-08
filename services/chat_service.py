@@ -73,3 +73,64 @@ class ChatService:
             history.append(session)
         
         return history
+    
+    @staticmethod
+    def generate_chat_name(session: Dict, history: List[Dict]) -> str:
+        if not session['messages']:
+            return ChatService.get_next_new_chat_number(history)
+        
+        first_msg = session['messages'][0]
+        answer = first_msg.get('answer', '')
+        
+        if answer:
+            words = answer.split()
+            selected_words = []
+            for i, word in enumerate(words[:5]): 
+                selected_words.append(word)
+                if word.rstrip().endswith(('.', '!', '?')):
+                    break
+            base_name = ' '.join(selected_words).rstrip('.!?')
+        else:
+            return ChatService.get_next_new_chat_number(history)
+        
+        if len(base_name) > 40:
+            base_name = base_name[:37] + "..."
+        
+        return ChatService.generate_unique_name(base_name, history, session['id'])
+    
+    @staticmethod
+    def generate_unique_name(base_name: str, history: List[Dict], current_session_id: str) -> str:
+        
+        existing_names = {
+            chat['chat_name'] 
+            for chat in history 
+            if chat['id'] != current_session_id and 'chat_name' in chat
+        }
+
+        if base_name not in existing_names:
+            return base_name
+        
+        counter = 1
+        while f"{base_name} {counter}" in existing_names:
+            counter += 1
+        
+        return f"{base_name} {counter}"
+    
+    @staticmethod
+    def get_next_new_chat_number(history: List[Dict]) -> str:
+
+        new_chat_numbers = []
+        for chat in history:
+            chat_name = chat.get('chat_name', '')
+            if chat_name.startswith('New Chat - '):
+                try:
+                    num = int(chat_name.replace('New Chat - ', ''))
+                    new_chat_numbers.append(num)
+                except ValueError:
+                    pass
+        
+        if not new_chat_numbers:
+            return "New Chat - 1"
+        
+        next_num = max(new_chat_numbers) + 1
+        return f"New Chat - {next_num}"
