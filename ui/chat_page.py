@@ -131,7 +131,12 @@ class ChatPage(BasePage):
         with col_time:
             st.markdown(f"<div style='text-align: right; padding-top: 10px;'>{timestamp}</div>", unsafe_allow_html=True)
         
-        with st.container():
+        if(len(st.session_state.chat_messages) > 0):
+            chat_height = 700
+        else:
+            chat_height = 1
+        
+        with st.container(height=chat_height):
             ChatPage._render_msgs()
 
         with st.container():
@@ -153,8 +158,6 @@ class ChatPage(BasePage):
 
     @staticmethod
     def _handle_chat_input(prompt: str, model: Model):
-        with st.chat_message("user"):
-            st.write(prompt)
         
         with st.chat_message("assistant"):
             answer_model = model.get_answer(prompt)
