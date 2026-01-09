@@ -193,6 +193,7 @@ class ChatPage(BasePage):
             )
             ChatService.save_history(history)
         
+        st.rerun()
     
     @staticmethod
     def _handle_back_navigation():
