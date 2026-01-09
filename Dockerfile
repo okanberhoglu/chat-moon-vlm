@@ -8,14 +8,14 @@ RUN apt-get update && apt-get install -y \
 
 COPY requirements.txt .
 COPY main.py .
-COPY model_installer.py .
+COPY config.py .
+COPY ui ./ui
+COPY services ./services
+COPY model ./model
 
 RUN pip install -r requirements.txt
 
-RUN python model_installer.py
-
-# Declare volume for persistent data
-VOLUME ["/app/data"]
+RUN python ./model/model_installer.py
 
 EXPOSE 8501
 
