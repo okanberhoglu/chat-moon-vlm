@@ -27,9 +27,12 @@ class MainPage(BasePage):
             
             if image_file is not None:
                 image = Image.open(image_file)
-                st.image(image, caption="Selected Image")
+                col1, col2, col3 = st.columns([1, 3, 1])
+                with col2:
+                    st.image(image, caption="Selected Image")
+                    new_chat_button = st.button("Start New Chat", use_container_width=True)
                 
-                if st.button("Start New Chat", use_container_width=True):
+                if new_chat_button:
                     history = ChatService.load_history()
                     
                     image_name = image_file.name
