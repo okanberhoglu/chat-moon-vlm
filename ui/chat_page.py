@@ -11,6 +11,7 @@ class ChatPage(BasePage):
     
     @staticmethod
     def render(model: Model):
+
         st.write("# ChatMoonVLM")
     
         if 'chat_messages' not in st.session_state:
@@ -54,7 +55,7 @@ class ChatPage(BasePage):
     
     @staticmethod
     def _render_sidebar(display_image):
-        st.image(display_image, caption="Uploaded Image")
+        st.image(display_image, caption="Your Image")
         
         st.markdown("---")
         
@@ -84,7 +85,6 @@ class ChatPage(BasePage):
     
     @staticmethod
     def _render_chat_interface(model: Model):
-        
 
         chat_name = st.session_state.current_chat_session.get('chat_name', 'Chat')
         timestamp = st.session_state.current_chat_session.get('timestamp', '')
@@ -158,21 +158,17 @@ class ChatPage(BasePage):
 
     @staticmethod
     def _handle_chat_input(prompt: str, model: Model):
-        
-        with st.chat_message("assistant"):
-            answer_model = model.get_answer(prompt)
-            if answer_model is not None:
-                answer = answer_model
-            else:
-                answer = "There is an error. Please be sure the image is uploaded correctly."
-            st.write(answer)
-        
+        answer_model = model.get_answer(prompt)
+        if answer_model is not None:
+            answer = answer_model
+        else:
+            answer = "There is an error. Please be sure the image is uploaded correctly."
+       
         message = {
             'question': prompt,
             'answer': answer,
             'timestamp': datetime.now().strftime('%H:%M:%S')
         }
-        
         if not st.session_state.chat_messages or st.session_state.chat_messages[-1]['question'] != prompt:
             st.session_state.chat_messages.append(message)
             
@@ -197,7 +193,6 @@ class ChatPage(BasePage):
             )
             ChatService.save_history(history)
         
-        st.rerun()
     
     @staticmethod
     def _handle_back_navigation():
@@ -208,3 +203,4 @@ class ChatPage(BasePage):
         
         st.session_state.page = PAGE_MAIN
         st.rerun()
+        
