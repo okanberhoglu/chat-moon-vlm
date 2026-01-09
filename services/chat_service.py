@@ -76,20 +76,10 @@ class ChatService:
     
     @staticmethod
     def generate_chat_name(session: Dict, history: List[Dict]) -> str:
-        if not session['messages']:
-            return ChatService.get_next_new_chat_number(history)
+        image_name = session.get('image_name', '')
         
-        first_msg = session['messages'][0]
-        answer = first_msg.get('answer', '')
-        
-        if answer:
-            words = answer.split()
-            selected_words = []
-            for i, word in enumerate(words[:5]): 
-                selected_words.append(word)
-                if word.rstrip().endswith(('.', '!', '?')):
-                    break
-            base_name = ' '.join(selected_words).rstrip('.!?')
+        if image_name:
+            base_name = os.path.splitext(image_name)[0]
         else:
             return ChatService.get_next_new_chat_number(history)
         

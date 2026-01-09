@@ -120,7 +120,7 @@ class ChatPage(BasePage):
                         st.session_state.editing_chat_name = False
                         st.rerun()
             else:
-                col_edit, col_title = st.columns([0.075, 1])
+                col_edit, col_title = st.columns([0.5, 1])
                 with col_edit:
                     if st.button("✏️", key="edit_name", help="Edit chat name"):
                         st.session_state.editing_chat_name = True
@@ -132,7 +132,7 @@ class ChatPage(BasePage):
             st.markdown(f"<div style='text-align: right; padding-top: 10px;'>{timestamp}</div>", unsafe_allow_html=True)
         
         if(len(st.session_state.chat_messages) > 0):
-            chat_height = 700
+            chat_height = 500
         else:
             chat_height = 1
         
