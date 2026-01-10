@@ -39,20 +39,20 @@ class ChatPage(BasePage):
             st.session_state.encoded_images_cache = {}
         
         image_path = st.session_state.current_chat_session.get('image_path')
-        if image_path and os.path.exists(image_path):
-            if image_path in st.session_state.encoded_images_cache:
-                model.enc_image = st.session_state.encoded_images_cache[image_path]
+        with st.spinner("Preparing the image, this may take some time ..."):
+            if image_path and os.path.exists(image_path):
+                if image_path in st.session_state.encoded_images_cache:
+                    model.enc_image = st.session_state.encoded_images_cache[image_path]
+                else:
+                    model.encode_image(image_path)
+                    if model.enc_image is not None:
+                        st.session_state.encoded_images_cache[image_path] = model.enc_image
+                return ImageService.load_image(image_path)
             else:
-                model.encode_image(image_path)
-                if model.enc_image is not None:
-                    st.session_state.encoded_images_cache[image_path] = model.enc_image
+                if model.enc_image is None:
+                    model.encode_image(st.session_state.uploaded_image)
+                return st.session_state.uploaded_image
             
-            return ImageService.load_image(image_path)
-        else:
-            if model.enc_image is None:
-                model.encode_image(st.session_state.uploaded_image)
-            return st.session_state.uploaded_image
-    
     @staticmethod
     def _render_sidebar(display_image):
         st.image(display_image, caption="Your Image")
@@ -158,7 +158,8 @@ class ChatPage(BasePage):
 
     @staticmethod
     def _handle_chat_input(prompt: str, model: Model):
-        answer_model = model.get_answer(prompt)
+        with st.spinner("Thinking..."):
+            answer_model = model.get_answer(prompt)
         if answer_model is not None:
             answer = answer_model
         else:

@@ -28,6 +28,7 @@ def main():
             st.session_state.page = PAGE_MAIN
             MainPage.render()
     else:
+        st.error("Please be sure that the model is installed.")
         st.stop()
 
 
