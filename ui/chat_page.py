@@ -55,7 +55,7 @@ class ChatPage(BasePage):
 
     @staticmethod
     def _render_sidebar(display_image):
-        st.image(display_image, caption="Your Image")
+        st.image(display_image, caption="Uploaded Image")
         
         st.markdown("---")
         
