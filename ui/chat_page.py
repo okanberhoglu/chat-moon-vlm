@@ -39,7 +39,7 @@ class ChatPage(BasePage):
             st.session_state.encoded_images_cache = {}
         
         image_path = st.session_state.current_chat_session.get('image_path')
-        with st.spinner("Preparing the image, this may take some time ..."):
+        with st.spinner("Preparing the image, this may take some time..."):
             if image_path and os.path.exists(image_path):
                 if image_path in st.session_state.encoded_images_cache:
                     model.enc_image = st.session_state.encoded_images_cache[image_path]
@@ -52,7 +52,7 @@ class ChatPage(BasePage):
                 if model.enc_image is None:
                     model.encode_image(st.session_state.uploaded_image)
                 return st.session_state.uploaded_image
-            
+
     @staticmethod
     def _render_sidebar(display_image):
         st.image(display_image, caption="Your Image")
