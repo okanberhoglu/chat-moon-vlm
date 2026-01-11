@@ -16,4 +16,4 @@ This will expose the application on `http://localhost:8501`.
 
 ## Detailed Information
 
-For comprehensive details regarding the methodology, architecture, and implementation, please refer to the project report located at `docs/berhoglu_okan_project_report.pdf`.
+For comprehensive details regarding the methodology, architecture, and implementation, please refer to the project[report](docs/berhoglu_okan_project_report.pdf).
