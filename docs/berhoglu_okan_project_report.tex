@@ -43,34 +43,45 @@ Moondream emerges as a compelling solution in this landscape. It is a small, ope
 
 To ensure reproducibility and streamline the deployment process, Docker is utilized to containerize the application. Docker provides a lightweight and portable environment that encapsulates the application and its dependencies, eliminating the "it works on my machine" problem. By defining the runtime environment in a Dockerfile, we ensure that the model behaves consistently across different computing platforms. This approach simplifies the setup process for other researchers and developers, allowing them to easily deploy and experiment with software applications or models without worrying about conflicting libraries or system configurations.
 
-In this work, the Moondream model is implemented for Visual Question Answering (VQA) tasks. The model processes natural language questions about input images and generates corresponding natural language answers. To ensure consistency and ease of deployment, the application is containerized using Docker. The implementation is validated using a set of test images and questions, and users interact with the application through a Command Line Interface (CLI).
+In this work, the Moondream model is implemented for Visual Question Answering (VQA) tasks. The model processes natural language questions about input images and generates corresponding natural language answers. To ensure consistency and ease of deployment, the application is containerized using Docker. The implementation is validated using a set of test images and questions. The application is a web application that developed by using Streamlit.
 
-This report is structured as follows; after the introduction, the methodology section describes the technical details of the implementation, an example usage of the docker image is given in the results section and the usage of the application is given in the usage section. Lastly the conclusion section provides a summary of the work done.
+This report is structured as follows; after the introduction, the methodology section describes the technical details of the implementation, an example usage of the application is given in the results section and the usage of the application is given in the usage section. Lastly the conclusion section provides a summary of the work done.
 
 \section{Methodology}
-The moondream model is implemented for Visual Question Answering (VQA) tasks. The model processes natural language questions about input images and generates corresponding natural language answers. To ensure consistency and ease of deployment, the application is containerized using Docker. A docker image is created and pushed to Docker Hub. The docker image is then used to run the application. The docker image contains the moondream model, the application code, and the required dependencies.
+The application is transformed into a web-based Visual Question Answering (VQA) system using the Streamlit framework. This shift from a command-line interface to a web application significantly enhances user interaction and accessibility. The core of the system remains the Moondream model, but the surrounding architecture is redesigned to support stateful user sessions, image management, and a responsive user interface.
 
-The phase of the project contains a docker file, a requirements file and two python scripts. One of the scripts is used to install the model and the other one is the main script which the user interacts with.
+\subsection{Application Architecture}
+The application follows a modular structure, separating the user interface, business logic, and model interaction. The entry point is the \texttt{main.py} script, which serves as the main entry point for the Streamlit application. It initializes the session state, manages the navigation between different pages, and ensures the Moondream model is loaded. It directs the user to either the Main Page or the Chat Page based on the application state.
 
-The main script which is the "main.py" file, serves as the entry point for the application. It requires the path to an input image. Upon execution, the script loads the Moondream model. The specified image is then loaded and encoded by the model. The script enters an interactive loop where it waits for the user to input questions about the image. These questions are processed by the model, which generates and displays the corresponding answers. The loop continues until the user interrupts the process (e.g., via CTRL+C), ensuring a continuous and interactive user experience.
+The User Interface, located in the \texttt{ui/} directory, is built using Streamlit's component-based design. It consists of the \texttt{MainPage} and \texttt{ChatPage} components. The \texttt{MainPage} handles the initial user landing, providing functionality for users to upload new images to start a chat session and displaying a history of recent chat sessions. The \texttt{ChatPage} manages the active chat interface, displaying the uploaded image, rendering the chat history (questions and answers), and providing an input field for new queries to interact with the model effectively.
 
-The other script which is the "model\_installer.py" file, is used to install the Moondream model. Upon execution, the script downloads the Moondream model from the Hugging Face model hub and saves it to the local machine using the "snapshot\_download" function from the "huggingface\_hub" library.
+To maintain clean code and separation of concerns, service modules are implemented in the \texttt{services/} directory. The \texttt{ChatService} manages the storage and retrieval of chat history, creating new sessions, and generating chat names. The \texttt{ImageService} handles image file operations, including saving uploaded images and loading them for display or processing.
 
-To facilitate the deployment, a Dockerfile is provided. This file defines the environment for the application. It starts with a lightweight Python 3.10 slim image. It then installs necessary system dependencies like git. The project files, including the requirements and scripts, are copied into the container. The Python dependencies listed in requirements file are installed. Crucially, the "model\_installer.py" script is executed during the build process to pre-download the Moondream model, ensuring it is baked into the image. Finally, the entry point is set to run the main application script.
+\subsection{Model Integration}
+The \texttt{Model} class in \texttt{model/model.py} encapsulates the interaction with the Moondream model. It is responsible for conditionally loading the model on GPU or CPU based on hardware availability, processing the input image into embeddings that the model can understand, and taking a natural language question and the encoded image to generate a text response during inference.
+
+A dedicated script, \texttt{model\_installer.py}, is used to download the specific revision of the Moondream model from the Hugging Face hub. This ensures that the correct model files are present before the application starts, which is particularly important for the Dockerized environment.
+
+\subsection{Containerization}
+The application is containerized using Docker to ensure a consistent execution environment. The \texttt{Dockerfile} is updated to support the web application. It uses \texttt{python:3.10-slim} as a base image for a lightweight footprint and installs system dependencies and Python packages listed in \texttt{requirements.txt}, which now includes \texttt{streamlit}.
+
+A crucial step in the methodology is the execution of \texttt{model\_installer.py} during the Docker build phase. This bakes the large model weights into the Docker image, preventing the need to download them every time the container starts.
+
+Finally, the container exposes port 8501, the default for Streamlit, and uses \texttt{streamlit run main.py} as the entry point command.
 
 \section{Usage}
 \label{sec:usage}
 The resulting image is published in the docker hub. The application can be found in this link:
-\url{https://hub.docker.com/r/okanberhoglu/mmi712_project_moondream}
+\url{https://hub.docker.com/r/okanberhoglu/chat_moon_vlm}
 
 After downloading the image, the application can be run using the following command:
-{\fontsize{7pt}{7pt}\selectfont
-\begin{verbatim}
-docker run -it --rm -v <path_to_image_folder>:/data:ro okanberhoglu/mmi712_project_moondream:latest --image_path /data/<image_name>
-\end{verbatim}
+\begin{center}
+{\fontsize{12pt}{12pt}\selectfont
+\texttt{docker run -p 8501:8501 okanberhoglu/chat\_moon\_vlm:latest}
 }
+\end{center}
 
-The given command runs the Docker image in interactive mode and removes the container automatically after it exits, ensuring that no temporary containers remain on the system. The "\texttt{-v <path\_to\_image\_folder>:/data:ro}" option mounts a local directory containing the input image into the container at the "/data" path in read-only mode, allowing the container to access the image without modifying the host files. The Docker image "okanberhoglu/mmi712\_project\_moondream:latest" encapsulates all required dependencies and the inference environment. The "\texttt{--image\_path /data/<image\_name>}" argument is passed directly to the application inside the container and specifies the exact location of the input image to be processed.
+The given command runs the Docker image in a container and maps the host's port 8501 to the container's port 8501. This allows the user to access the web application by navigating to \url{http://localhost:8501} in their web browser. The Docker image "okanberhoglu/chat\_moon\_vlm:latest" encapsulates all required dependencies, the Streamlit server, and the inference environment. Once the container is running, the application interface will be available for uploading images and asking questions.
 
 \section{Results}
 An example usage of the application and the results are given in this section. Firstly the test input image is given in the figure \ref{fig:test}.
@@ -125,6 +136,9 @@ Hugging Face. \textit{Hugging Face: The AI community building the future}. Avail
 
 \bibitem{docker}
 Docker. \textit{Docker Documentation}. Available at: \url{https://docs.docker.com/} (Accessed: \today).
+
+\bibitem{streamlit}
+Streamlit. \textit{Streamlit: A faster way to build and share data apps}. Available at: \url{https://streamlit.io/} (Accessed: \today).
 
 \end{thebibliography}
 
