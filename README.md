@@ -2,6 +2,8 @@
 
 ChatMoonVLM is a web-based Visual Question Answering (VQA) application powered by the Moondream model. It allows users to upload images and ask natural language questions about them through an interactive chat interface.
 
+![ChatMoonVLM](docs/chat_ss_three.png)
+
 ## Usage
 
 The application is containerized using Docker and the image is published on Docker Hub. 
