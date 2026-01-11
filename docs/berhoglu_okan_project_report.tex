@@ -18,8 +18,8 @@
 }
 
 % Title Page Information
-\title{\textbf{MMI712 Project Phase 1 Report}}
-\author{Okan Berhoglu 2739050}
+\title{\textbf{ChatMoonVLM Report}}
+\author{Okan Berhoğlu}
 \date{\today}
 
 \begin{document}
@@ -33,7 +33,7 @@
 \newpage
 
 \begin{abstract}
-    \textit{This report describes the implementation of a Visual Question Answering (VQA) system using the Moondream model. The application is containerized with Docker to ensure easy deployment and reproducibility. A command-line interface (CLI) allows users to ask questions about images. The project demonstrates how to run efficient vision-language models on local hardware.}
+    \textit{This report details the design and implementation of ChatMoonVLM, a web-based Visual Question Answering (VQA) system powered by the efficient Moondream vision-language model. Addressing the need for accessible and privacy-preserving AI solutions, the project leverages a lightweight model architecture capable of running on local hardware without reliance on external APIs. The application is built using the Streamlit framework to provide an intuitive user interface for image uploading and interactive querying. Furthermore, the entire system is containerized with Docker to ensure consistent deployment and reproducibility across different environments. Key features include persistent chat history, resource-aware model loading, and a modular architecture. This work demonstrates the practical viability of deploying efficient, open-source vision-language models for real-world applications on consumer-grade infrastructure.}
 \end{abstract}
 
 \section{Introduction}
@@ -41,14 +41,14 @@ Recent advancements in Artificial Intelligence have led to the development of po
 
 Moondream emerges as a compelling solution in this landscape. It is a small, open-source vision language model designed to run efficiently on consumer-grade hardware and even mobile devices. By leveraging a compact architecture, Moondream significantly reduces the computational overhead associated with traditional VLMs without sacrificing essential capabilities. Consequently, Moondream offers a practical pathway for deploying visual understanding capabilities in real-world scenarios where resource efficiency and accessibility are paramount. 
 
-To ensure reproducibility and streamline the deployment process, Docker is utilized to containerize the application. Docker provides a lightweight and portable environment that encapsulates the application and its dependencies, eliminating the "it works on my machine" problem. By defining the runtime environment in a Dockerfile, we ensure that the model behaves consistently across different computing platforms. This approach simplifies the setup process for other researchers and developers, allowing them to easily deploy and experiment with software applications or models without worrying about conflicting libraries or system configurations.
+To ensure reproducibility and streamline the deployment process, Docker is utilized to containerize the application. Docker provides a lightweight and portable environment that encapsulates the application and its dependencies, eliminating environment inconsistency issues. By defining the runtime environment in a Dockerfile, it is ensured that the model behaves consistently across different computing platforms. This approach simplifies the setup process for other researchers and developers, allowing them to easily deploy and experiment with software applications or models without worrying about conflicting libraries or system configurations.
 
 In this work, the Moondream model is implemented for Visual Question Answering (VQA) tasks. The model processes natural language questions about input images and generates corresponding natural language answers. To ensure consistency and ease of deployment, the application is containerized using Docker. The implementation is validated using a set of test images and questions. The application is a web application that developed by using Streamlit.
 
 This report is structured as follows; after the introduction, the methodology section describes the technical details of the implementation, an example usage of the application is given in the results section and the usage of the application is given in the usage section. Lastly the conclusion section provides a summary of the work done.
 
 \section{Methodology}
-The application is transformed into a web-based Visual Question Answering (VQA) system using the Streamlit framework. This shift from a command-line interface to a web application significantly enhances user interaction and accessibility. The core of the system remains the Moondream model, but the surrounding architecture is redesigned to support stateful user sessions, image management, and a responsive user interface.
+The application is designed as a web-based Visual Question Answering (VQA) system using the Streamlit framework. This approach significantly enhances user interaction and accessibility. The core of the system remains the Moondream model, but the surrounding architecture is redesigned to support stateful user sessions, image management, and a responsive user interface.
 
 \subsection{Application Architecture}
 The application follows a modular structure, separating the user interface, business logic, and model interaction. The entry point is the \texttt{main.py} script, which serves as the main entry point for the Streamlit application. It initializes the session state, manages the navigation between different pages, and ensures the Moondream model is loaded. It directs the user to either the Main Page or the Chat Page based on the application state.
@@ -61,6 +61,9 @@ To maintain clean code and separation of concerns, service modules are implement
 The \texttt{Model} class in \texttt{model/model.py} encapsulates the interaction with the Moondream model. It is responsible for conditionally loading the model on GPU or CPU based on hardware availability, processing the input image into embeddings that the model can understand, and taking a natural language question and the encoded image to generate a text response during inference.
 
 A dedicated script, \texttt{model\_installer.py}, is used to download the specific revision of the Moondream model from the Hugging Face hub. This ensures that the correct model files are present before the application starts, which is particularly important for the Dockerized environment.
+
+\subsection{Data Management and Optimization}
+To ensure a seamless user experience and efficient resource utilization, the application implements specific strategies for data persistence and performance optimization. The application maintains a persistent record of user interactions, where chat sessions, including the image reference and the dialogue history, are serialized and stored in a JSON file. The \texttt{ChatService} module handles the reading and writing of this data, ensuring that users can access their previous conversations even after restarting the application. This feature allows for a continuity of work and reviewing past insights. Furthermore, to address the computational cost of the Visual Question Answering task, the \texttt{Model} class implements an in-memory caching mechanism. When an image is uploaded, it is encoded once, and the resulting embeddings are stored in the \texttt{self.enc\_image} attribute. Subsequent questions about the same image utilize this cached representation, significantly reducing latency and improving the responsiveness of the chat interface.
 
 \subsection{Containerization}
 The application is containerized using Docker to ensure a consistent execution environment. The \texttt{Dockerfile} is updated to support the web application. It uses \texttt{python:3.10-slim} as a base image for a lightweight footprint and installs system dependencies and Python packages listed in \texttt{requirements.txt}, which now includes \texttt{streamlit}.
@@ -84,15 +87,16 @@ After downloading the image, the application can be run using the following comm
 The given command runs the Docker image in a container and maps the host's port 8501 to the container's port 8501. This allows the user to access the web application by navigating to \url{http://localhost:8501} in their web browser. The Docker image "okanberhoglu/chat\_moon\_vlm:latest" encapsulates all required dependencies, the Streamlit server, and the inference environment. Once the container is running, the application interface will be available for uploading images and asking questions.
 
 \section{Results}
-An example usage of the application and the results are given in this section. Firstly the test input image is given in the figure \ref{fig:test}.
+The main page of the application is shown in the figure \ref{fig:main_page}.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=350pt]{main_ss.png}
-    \caption{Example input image.}
-    \label{fig:test}
+    \caption{Main page of the application.}
+    \label{fig:main_page}
 \end{figure}
-After running the application with the command given in the section \ref{sec:usage}, the application can be used as shown in the figures \ref{fig:q1} and \ref{fig:q2}.
+
+In the main page user can upload an image and start a new chat. Besides, user can go to the previous chats in this page. The figure \ref{fig:test_one} shows the main page with an uploaded image. By clicking the "Start New Chat" button, user can start a new chat. And the chat screen of for the image that is given in the figure \ref{fig:test_one} is shown in the figure \ref{fig:one_q1}.
 
 \begin{figure}[H]
     \centering
@@ -104,42 +108,28 @@ After running the application with the command given in the section \ref{sec:usa
 \begin{figure}[H]
     \centering
     \includegraphics[width=350pt]{chat_ss_one.png}
-    \caption{Example usage with other test image.}
+    \caption{Example usage with a test image.}
     \label{fig:one_q1}
 \end{figure}
 
-The application is executed with another test image which is given in the figure \ref{fig:test_two} as well. The results are given in the figure \ref{fig:two_q1}.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=350pt]{main_ss_two.png}
-    \caption{Example input image.}
-    \label{fig:test_two}
-\end{figure}
+In the figures \ref{fig:one_q1}, \ref{fig:two_q1} and \ref{fig:three_q1} the chat screen with example questions are shown. The user can ask questions about the image and the model will answer them in the chat page.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=350pt]{chat_ss_two.png}
-    \caption{Example usage with other test image.}
+    \caption{Example usage with a test image.}
     \label{fig:two_q1}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=350pt]{main_ss_three.png}
-    \caption{Example input image.}
-    \label{fig:test_three}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
     \includegraphics[width=350pt]{chat_ss_three.png}
-    \caption{Example usage with other test image.}
+    \caption{Example usage with a test image.}
     \label{fig:three_q1}
 \end{figure}
 
 \section{Conclusion}
-In this project, the Moondream vision language model was successfully containerized using Docker. A Dockerfile was created to automate the installation of dependencies and the model itself, ensuring a consistent and reproducible environment. A Python script was developed to interface with the model, allowing users to perform Visual Question Answering tasks via a command-line interface. This implementation simplifies the deployment process and demonstrates the feasibility of running efficient VLMs on local hardware.
+In this project, a web-based Visual Question Answering (VQA) system was successfully developed and deployed using the Moondream model and the Streamlit framework. The application provides an intuitive interface for users to upload images, manage chat history, and interact with the vision-language model in real-time. By containerizing the entire system with Docker, a consistent and reproducible environment was established, simplifying deployment across different platforms. Furthermore, the implementation of chat history persistence and in-memory image embedding caching significantly enhances the user experience and system performance. This work demonstrates that efficient, open-source vision-language models can be effectively integrated into user-friendly applications and run on local hardware, offering a practical solution for privacy-conscious and resource-constrained scenarios.
 
 \begin{thebibliography}{9}
 
